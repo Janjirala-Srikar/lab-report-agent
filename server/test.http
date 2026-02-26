@@ -1,0 +1,21 @@
+
+
+###
+POST http://localhost:5000/api/register
+Content-Type: application/json
+
+{
+  "email": "ashishlukka2005@gmail.com",
+  "password": "ashish@123"
+}
+
+
+
+###
+POST http://localhost:5000/api/login
+Content-Type: application/json
+
+{
+  "email": "ashishlukka2005@gmail.com",
+  "password": "ashish@123"
+}
