@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const userController = require("./controllers/userController");
+const emailController = require("./controllers/emailController");
 const verifyToken = require("./middlewares/authMiddleware");
 
 const app = express();
@@ -19,6 +20,8 @@ app.get("/", (req, res) => {
 // Auth Routes
 app.post("/api/register", userController.register);
 app.post("/api/login", userController.login);
+app.post("/api/send-mail", emailController.sendMailHandler);
+
 
 // Protected Route Example
 app.get("/api/profile", verifyToken, (req, res) => {
