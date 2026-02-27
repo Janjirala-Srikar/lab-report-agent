@@ -5,6 +5,8 @@ require("dotenv").config();
 const userController = require("./controllers/userController");
 const emailController = require("./controllers/emailController");
 const verifyToken = require("./middlewares/authMiddleware");
+const upload = require("./middlewares/uploadMiddleware");
+const fileController = require("./controllers/fileController");
 
 const app = express();
 
@@ -21,7 +23,7 @@ app.get("/", (req, res) => {
 app.post("/api/register", userController.register);
 app.post("/api/login", userController.login);
 app.post("/api/send-mail", emailController.sendMailHandler);
-
+app.post("/api/upload", upload.array("file", 10), fileController.extractFileData);
 
 // Protected Route Example
 app.get("/api/profile", verifyToken, (req, res) => {
