@@ -10,8 +10,8 @@ const formatBytes = (bytes) => {
 };
 
 const LANGUAGES = [
-  { key: "english", label: "English", flag: "EN" },
-  { key: "hindi", label: "हिन्दी", flag: "HI" },
+  { key: "english", label: "English" },
+  { key: "hindi", label: "हिन्दी" },
 ];
 
 const Upload = () => {
@@ -36,7 +36,6 @@ const Upload = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const synth = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const voicesRef = useRef([]);
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
   const stoppingRef = useRef(false);
 
   useEffect(() => {
@@ -63,7 +62,6 @@ const Upload = () => {
       const list = synth.current.getVoices() || [];
       if (list.length) {
         voicesRef.current = list;
-        setVoicesLoaded(true);
       }
     };
 
@@ -265,14 +263,14 @@ const Upload = () => {
 
   return (
     <main className="up-page">
-      <div className="up-inner">
-
-        {!result ? (
-          <div className="up-card">
-            <h1>Analyse Your Lab Report</h1>
+      {!result ? (
+        <div className="up-container">
+          <div className="up-content">
+            <h1 className="up-title">Upload Your Lab Report</h1>
+            <p className="up-subtitle">Get instant insights about your health in seconds</p>
 
             <div
-              className={`up-dropzone ${isDragging ? "up-dropzone--drag" : ""}`}
+              className={`up-dropzone ${isDragging ? "up-dropzone--active" : ""}`}
               onClick={() => !file && inputRef.current.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -285,100 +283,94 @@ const Upload = () => {
                 className="up-input-hidden"
                 onChange={(e) => handleFile(e.target.files[0])}
               />
-              {!file ? (
-                <p>Drop PDF here or click to browse</p>
-              ) : (
-                <div>
-                  <span>{file.name}</span>
-                  <span>{formatBytes(file.size)}</span>
-                </div>
-              )}
+              <div className="up-dropzone-content">
+                {!file ? (
+                  <>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span className="up-dropzone-text">Drop your PDF here or click to browse</span>
+                  </>
+                ) : (
+                  <div className="up-file-info">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                      <polyline points="13 2 13 9 20 9" />
+                    </svg>
+                    <div>
+                      <p className="up-file-name">{file.name}</p>
+                      <p className="up-file-size">{formatBytes(file.size)}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {error && <p className="up-error">{error}</p>}
 
-            <button onClick={handleSubmit} disabled={!file || loading}>
+            <button className="up-btn" onClick={handleSubmit} disabled={!file || loading}>
               {loading ? (
                 <>
                   <span className="up-spinner" />
                   Analysing...
                 </>
-              ) : "Generate Report"}
+              ) : "Analyse Report"}
             </button>
           </div>
-        ) : (
-          <div className="result-wrap">
+        </div>
+      ) : (
+        <div className="result-container">
+          <div className="result-header">
+            <div className="result-patient">
+              <h2>{result.structured_data?.patient_name}</h2>
+              <div className="result-meta">
+                {result.structured_data?.age && <span>{result.structured_data.age}</span>}
+                {result.structured_data?.gender && <span>{result.structured_data.gender}</span>}
+              </div>
+            </div>
+            <button
+              className="result-new-btn"
+              onClick={() => {
+                setFile(null);
+                setResult(null);
+                setActiveLang("english");
+                sessionStorage.removeItem("labResult");
+                sessionStorage.removeItem("labLang");
+              }}
+            >
+              Upload New Report
+            </button>
+          </div>
 
-            {/* Top bar */}
-            <div className="result-topbar">
-              <button
-                className="result-new-btn"
-                onClick={() => {
-                  setFile(null);
-                  setResult(null);
-                  setActiveLang("english");
-                  sessionStorage.removeItem("labResult");
-                  sessionStorage.removeItem("labLang");
-                }}
-              >
-                ← New Report
-              </button>
-              <div className="result-patient-pill">
-                <span className="patient-label">Patient</span>
-                <span className="patient-name">{result.structured_data?.patient_name}</span>
-                {result.structured_data?.age && (
-                  <span className="patient-meta">{result.structured_data.age}</span>
-                )}
-                {result.structured_data?.gender && (
-                  <span className="patient-meta">{result.structured_data.gender}</span>
-                )}
+          <div className="result-content">
+            <div className="result-tests">
+              <h3>Test Results</h3>
+              <div className="tests-table">
+                {result.structured_data?.tests?.map((test, i) => (
+                  <div key={i} className={`test-row ${getStatusClass(test)}`}>
+                    <div className="test-info">
+                      <p className="test-name">{test.test_name}</p>
+                      <p className="test-range">{test.reference_range || "—"}</p>
+                    </div>
+                    <div className="test-value">
+                      <span className="value">{test.value || "—"}</span>
+                      <span className="unit">{test.unit || "—"}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Two-panel layout */}
-            <div className="result-panels">
-
-              {/* LEFT — scrollable table */}
-              <div className="panel-left">
-                <div className="panel-header">
-                  <span>Test Results</span>
-                  <div className="legend">
-                    <span className="legend-dot normal" />Normal
-                    <span className="legend-dot high" />High
-                    <span className="legend-dot low" />Low
-                  </div>
-                </div>
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Test</th>
-                        <th>Value</th>
-                        <th>Unit</th>
-                        <th>Range</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.structured_data?.tests?.map((test, i) => (
-                        <tr key={i} className={getStatusClass(test)}>
-                          <td className="td-test">{test.test_name}</td>
-                          <td className="td-value">{test.value || "—"}</td>
-                          <td className="td-unit">{test.unit || "—"}</td>
-                          <td className="td-range">{test.reference_range || "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* RIGHT — sticky explanation */}
-              <div className="panel-right">
-                <div className="lang-toggle">
+            <div className="result-analysis">
+              <div className="analysis-header">
+                <h3>Analysis</h3>
+                <div className="lang-switch">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.key}
-                      className={activeLang === lang.key ? "lang-btn lang-active" : "lang-btn"}
+                      className={`lang-btn ${activeLang === lang.key ? "lang-btn--active" : ""}`}
                       onClick={() => {
                         if (isSpeaking && synth.current) {
                           stoppingRef.current = true;
@@ -388,31 +380,25 @@ const Upload = () => {
                         setActiveLang(lang.key);
                       }}
                     >
-                      <span className="lang-flag">{lang.flag}</span>
-                      <span className="lang-label">{lang.label}</span>
+                      {lang.label}
                     </button>
                   ))}
                 </div>
-
-                <div className="explanation-scroll">
-                  <button
-                    className={`voice-btn ${isSpeaking ? 'voice-btn-active' : ''}`}
-                    onClick={handleSpeak}
-                    title={isSpeaking ? 'Stop' : 'Listen'}
-                  >
-                    {isSpeaking ? '⏹️' : '🔊'}
-                  </button>
-                  <div className="explanation-content">
-                    {formatExplanation(result.explanation?.[activeLang])}
-                  </div>
-                </div>
               </div>
-
+              <button
+                className={`voice-btn ${isSpeaking ? "voice-btn--active" : ""}`}
+                onClick={handleSpeak}
+                title={isSpeaking ? "Stop" : "Listen"}
+              >
+                {isSpeaking ? "⏹" : "🔊"}
+              </button>
+              <div className="analysis-text">
+                {formatExplanation(result.explanation?.[activeLang])}
+              </div>
             </div>
           </div>
-        )}
-
-      </div>
+        </div>
+      )}
     </main>
   );
 };

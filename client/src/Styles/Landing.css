@@ -66,7 +66,7 @@ nav {
 
 .nav-links a {
   text-decoration: none;
-  color: var(--ink-muted);
+  color: white;
   font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -191,7 +191,7 @@ nav {
 }
 
 .btn-primary {
-  background: #5C5470;
+  background: #453e53;
   color: #DBD8E3;
   border: none;
   padding: 13px 22px;
@@ -201,8 +201,8 @@ nav {
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 2px 12px rgba(92,84,112,0.35);
+  /* transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 2px 12px rgba(92,84,112,0.35); */
 }
 
 .btn-primary:hover {
@@ -276,7 +276,7 @@ nav {
 
 .report-body {
   padding: 31px;
-  margin-bottom: 30px;
+  /* margin-bottom: 30px; */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
@@ -355,6 +355,7 @@ nav {
   font-size: 0.875rem;
   color: var(--ink-muted);
   line-height: 1.65;
+  text-align: justify;
 }
 
 /* SECTIONS */
@@ -451,7 +452,7 @@ section { padding: 96px 48px; }
 .features-section { max-width: 1140px; margin: 0 auto; }
 
 #features {
-  background: #2c283f;
+  background: #2A2438;
 }
 
 .features-grid {
@@ -459,7 +460,7 @@ section { padding: 96px 48px; }
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
   margin-top: 64px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 16px;
   overflow: hidden;
 }
@@ -558,9 +559,8 @@ section { padding: 96px 48px; }
 
 /* VIDEO DEMO */
 .video-demo-section {
-  background: #2b2637;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+
 }
 
 .video-demo-inner {
@@ -622,7 +622,7 @@ section { padding: 96px 48px; }
 }
 
 /* CTA */
-.cta-section { text-align: center; padding: 9 0px 40px; }
+.cta-section { text-align: center; padding: 9 0px 40px; background-color: #2A2438; }
 
 .cta-inner {
   max-width: 620px;
@@ -635,7 +635,7 @@ section { padding: 96px 48px; }
 /* FOOTER */
 footer {
   padding: 40px 48px;
-  border-top: 1px solid var(--border);
+  /* border-top: 1px solid var(--border); */
   display: flex;
   align-items: center;
   justify-content: space-between;

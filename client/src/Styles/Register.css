@@ -143,7 +143,7 @@ body {
 /* Submit Button */
 .submit-button {
   padding: 14px 24px;
-  background: linear-gradient(135deg, #5C5470 0%, #352F44 100%);
+  background: linear-gradient(135deg, #5C5470 0%);
   color: #DBD8E3;
   border: none;
   border-radius: 10px;

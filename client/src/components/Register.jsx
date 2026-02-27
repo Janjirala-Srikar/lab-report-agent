@@ -31,7 +31,7 @@ const Register = () => {
       {/* Left Side - Image */}
       <div className="image-section">
         <img
-          src="https://i.postimg.cc/wTQgyVKz/svgviewer-png-output.png"
+          src="https://i.postimg.cc/dt9M5Vtx/svgviewer-png-output-(1).png"
           alt="Register Illustration"
           className="register-image"
         />
@@ -91,7 +91,7 @@ const Register = () => {
           <div className="form-footer">
             <p className="login-text">
               Already have an account?{" "}
-              <Link to="/" className="login-link">
+              <Link to="/login" className="login-link">
                 Login here
               </Link>
             </p>

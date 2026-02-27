@@ -27,7 +27,7 @@ const saveMedicalReport = async (
 };
 
 // ==========================================
-// SAVE EACH INDIVIDUAL TEST VALUE (Step 2)
+// SAVE EACH INDIVIDUAL TEST VALUE
 // ==========================================
 const saveMedicalTestValue = async (
   userId,
@@ -45,6 +45,97 @@ const saveMedicalTestValue = async (
   );
 
   return result;
+};
+
+// ==========================================
+// SAVE EMBEDDING (medical reports)
+// ==========================================
+const saveEmbedding = async (
+  userId,
+  reportId,
+  summaryText,
+  embeddingArray
+) => {
+  const [result] = await pool.execute(
+    `INSERT INTO medical_embeddings
+    (user_id, report_id, summary_text, embedding)
+    VALUES (?, ?, ?, ?)`,
+    [
+      userId,
+      reportId,
+      summaryText,
+      JSON.stringify(embeddingArray), // safer for MySQL
+    ]
+  );
+
+  return result;
+};
+
+// ==========================================
+// GET ALL EMBEDDINGS FOR USER (RAG)
+// ==========================================
+const getUserEmbeddings = async (userId) => {
+  const [rows] = await pool.execute(
+    `SELECT id, report_id, summary_text, embedding
+     FROM medical_embeddings
+     WHERE user_id = ?`,
+    [userId]
+  );
+
+  return rows;
+};
+
+// ==========================================
+// CHAT HISTORY - SEMANTIC GROUPING
+// ==========================================
+
+// Save chat
+const saveChatHistory = async (
+  userId,
+  groupId,
+  question,
+  answer,
+  embedding
+) => {
+  const [result] = await pool.execute(
+    `INSERT INTO chat_history
+     (user_id, group_id, question, answer, embedding)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      userId,
+      groupId,
+      question,
+      answer,
+      JSON.stringify(embedding),
+    ]
+  );
+
+  return result;
+};
+
+// Get all previous question embeddings (for grouping)
+const getUserQuestions = async (userId) => {
+  const [rows] = await pool.execute(
+    `SELECT group_id, embedding
+     FROM chat_history
+     WHERE user_id = ?`,
+    [userId]
+  );
+
+  return rows;
+};
+
+// Get conversation history for specific group
+const getGroupHistory = async (userId, groupId) => {
+  const [rows] = await pool.execute(
+    `SELECT question, answer
+     FROM chat_history
+     WHERE user_id = ? AND group_id = ?
+     ORDER BY created_at ASC`,
+    [userId, groupId]
+  );
+
+  return rows;
 };
 
 // ==========================================
@@ -75,7 +166,7 @@ const getMedicalReportById = async (reportId, userId) => {
 };
 
 // ==========================================
-// GET HISTORY OF SPECIFIC TEST (TREND ENGINE)
+// GET HISTORY OF SPECIFIC TEST
 // ==========================================
 const getTestHistoryByName = async (userId, testName) => {
   const [rows] = await pool.execute(
@@ -91,7 +182,7 @@ const getTestHistoryByName = async (userId, testName) => {
 };
 
 // ==========================================
-// GET ALL TEST HISTORY FOR USER
+// GET ALL TEST HISTORY
 // ==========================================
 const getAllTestHistory = async (userId) => {
   const [rows] = await pool.execute(
@@ -105,9 +196,17 @@ const getAllTestHistory = async (userId) => {
   return rows;
 };
 
+// ==========================================
+// EXPORTS (ONLY ONE EXPORT OBJECT)
+// ==========================================
 module.exports = {
   saveMedicalReport,
   saveMedicalTestValue,
+  saveEmbedding,
+  getUserEmbeddings,
+  saveChatHistory,
+  getUserQuestions,
+  getGroupHistory,
   getMedicalReportsByUserId,
   getMedicalReportById,
   getTestHistoryByName,

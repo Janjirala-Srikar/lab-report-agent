@@ -47,10 +47,10 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  const getInitials = (name) => {
-    if (!name) return "?";
-    return name.slice(0, 2).toUpperCase();
-  };
+  const getInitials = (username) => {
+  if (!username || typeof username !== "string") return "";
+  return username.trim().charAt(0).toUpperCase();
+};
 
   const extractUsername = (email) => {
     if (!email) return "Guest";
@@ -91,8 +91,8 @@ const Dashboard = () => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             aria-expanded={dropdownOpen}
           >
-            <span className="profile-btn__avatar">{getInitials(user?.username)}</span>
-            <span className="profile-btn__name">{user?.username}</span>
+            <span className="profile-btn__avatar">{getInitials(username)}</span>
+            <span className="profile-btn__name">{username}</span>
             <svg
               className={`profile-btn__chevron ${dropdownOpen ? "profile-btn__chevron--open" : ""}`}
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -104,9 +104,9 @@ const Dashboard = () => {
           {dropdownOpen && (
             <div className="dropdown">
               <div className="dropdown__header">
-                <div className="dropdown__avatar">{getInitials(user?.username)}</div>
+                <div className="dropdown__avatar">{getInitials(username)}</div>
                 <div className="dropdown__info">
-                  <p className="dropdown__username">{user?.username}</p>
+                  <p className="dropdown__username">{username}</p>
                   <p className="dropdown__email">{user?.email}</p>
                 </div>
               </div>
