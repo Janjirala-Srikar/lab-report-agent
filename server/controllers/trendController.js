@@ -27,10 +27,19 @@ exports.getUserTrends = async (req, res) => {
 
       if (records.length < 2) continue;
 
-      const first = records[0].value;
-      const latest = records[records.length - 1].value;
+      const first = parseFloat(records[0].value);
+      const latest = parseFloat(records[records.length - 1].value);
 
-      const percentChange = ((latest - first) / first) * 100;
+      // Handle edge cases: zero or negative values
+      let percentChange;
+      if (first === 0) {
+        percentChange = latest === 0 ? 0 : (latest > 0 ? 100 : -100);
+      } else {
+        percentChange = ((latest - first) / Math.abs(first)) * 100;
+      }
+
+      // Ensure it's a valid number
+      percentChange = isNaN(percentChange) ? 0 : percentChange;
 
       trends.push({
         test_name: testName,
