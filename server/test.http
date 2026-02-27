@@ -19,3 +19,106 @@ Content-Type: application/json
   "email": "ashishlukka2005@gmail.com",
   "password": "ashish@123"
 }
+
+
+### Ask - First Question (Creates New Semantic Group)
+POST http://localhost:5000/api/ask
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQwMDAxLCJlbWFpbCI6ImFmemFsQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzcyMjEzNjExLCJleHAiOjE3NzIzMDAwMTF9.GIOZrxjEiYBD4sT6iZErzcobSUzg-K7K22CwEZILyCM
+Content-Type: application/json
+
+{
+  "question": "Is my HbA1c level high?"
+}
+
+@baseUrl = http://localhost:5000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjQwMDAxLCJlbWFpbCI6ImFmemFsQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzcyMjEzNjExLCJleHAiOjE3NzIzMDAwMTF9.GIOZrxjEiYBD4sT6iZErzcobSUzg-K7K22CwEZILyCM
+
+### 1️⃣ Most Recent Abnormal Result
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "What was my most recent abnormal lab result?"
+}
+
+### 2️⃣ Glucose Comparison
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Did my glucose improve compared to the last test?"
+}
+
+### 3️⃣ White Blood Cell Concern
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Based on our latest discussion, should I worry about my white blood cell count?"
+}
+
+### 4️⃣ Hemoglobin Conclusion
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "What did we just conclude about my hemoglobin levels?"
+}
+
+### 5️⃣ Earliest vs Latest Report
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Compare my earliest report with the most recent one."
+}
+
+### 6️⃣ HbA1c Trend Analysis
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Has my HbA1c changed significantly since the first report?"
+}
+
+### 7️⃣ Worsened Parameter
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Which parameter worsened in the latest report?"
+}
+
+### 8️⃣ Overall Trend
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "From the recent results, what trend do you observe?"
+}
+
+### 9️⃣ Ignore Older Records
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Ignore older records — what does the last uploaded report indicate?"
+}
+
+### 🔟 Health Status Comparison
+POST {{baseUrl}}/api/ask
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "question": "Is my current health status better than before?"
+}

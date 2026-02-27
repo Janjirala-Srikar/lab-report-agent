@@ -4,14 +4,16 @@ const crypto = require("crypto");
 const Tesseract = require("tesseract.js");
 const pdf = require("pdf-poppler");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { generateEmbedding } = require("../utils/embedding");
 const reportModel = require("../models/reportModel");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 🔥 Switched model
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash"
+});
 
-// Simple in-memory cache
+// In-memory cache
 global.aiCache = global.aiCache || {};
 
 exports.extractFileData = async function (req, res) {
@@ -29,20 +31,17 @@ exports.extractFileData = async function (req, res) {
     let extractedFiles = [];
 
     // ===============================
-    // STEP 1: EXTRACT TEXT FROM ALL FILES
+    // STEP 1: OCR EXTRACTION
     // ===============================
     for (const file of req.files) {
       const filePath = file.path;
       const mimeType = file.mimetype;
       let extractedText = "";
 
-      // IMAGE OCR
       if (mimeType.startsWith("image/")) {
         const result = await Tesseract.recognize(filePath, "eng");
         extractedText = result.data.text;
-      }
-
-      // PDF OCR
+      } 
       else if (mimeType === "application/pdf") {
         const outputDir = "./uploads";
 
@@ -55,13 +54,11 @@ exports.extractFileData = async function (req, res) {
 
         await pdf.convert(filePath, opts);
 
-        const images = fs
-          .readdirSync(outputDir)
-          .filter(
-            f =>
-              f.startsWith(path.parse(file.originalname).name) &&
-              f.endsWith(".png")
-          );
+        const images = fs.readdirSync(outputDir).filter(
+          f =>
+            f.startsWith(path.parse(file.originalname).name) &&
+            f.endsWith(".png")
+        );
 
         for (const img of images) {
           const imgPath = path.join(outputDir, img);
@@ -77,6 +74,7 @@ exports.extractFileData = async function (req, res) {
         .trim();
 
       combinedText += extractedText + "\n\n";
+
       extractedFiles.push({
         name: file.originalname,
         rawText: extractedText
@@ -84,7 +82,7 @@ exports.extractFileData = async function (req, res) {
     }
 
     // ===============================
-    // STEP 2: HASH CHECK (CACHE)
+    // STEP 2: CACHE CHECK
     // ===============================
     const hash = crypto
       .createHash("sha256")
@@ -94,12 +92,12 @@ exports.extractFileData = async function (req, res) {
     let parsedResult;
 
     if (global.aiCache[hash]) {
-      console.log("✅ Using cached AI result");
+      console.log("✅ Using cached Gemini result");
       parsedResult = global.aiCache[hash];
-    } else {
-
+    } 
+    else {
       // ===============================
-      // STEP 3: GEMINI CALL (ONLY ONCE)
+      // STEP 3: GEMINI CALL
       // ===============================
       const prompt = `
 You are a medical data extraction assistant.
@@ -154,18 +152,25 @@ ${combinedText}
         };
       }
 
-      // Save to cache
       global.aiCache[hash] = parsedResult;
     }
 
     // ===============================
-    // STEP 4: SAVE TO DATABASE
+    // STEP 4: GENERATE EMBEDDING
+    // (FROM GEMINI RESPONSE)
+    // ===============================
+    const aiContentString = JSON.stringify(parsedResult);
+    const embedding = await generateEmbedding(aiContentString);
+
+    // ===============================
+    // STEP 5: SAVE DATA
     // ===============================
     let results = [];
 
     for (const fileData of extractedFiles) {
 
-      const dbResult = await reportModel.saveMedicalReport(
+      // Save main report
+      const reportResult = await reportModel.saveMedicalReport(
         userId,
         fileData.name,
         fileData.rawText,
@@ -173,8 +178,17 @@ ${combinedText}
         parsedResult.explanation
       );
 
-      const reportId = dbResult.insertId;
+      const reportId = reportResult.insertId;
 
+      // Save embedding in separate table
+      await reportModel.saveEmbedding(
+        userId,
+        reportId,
+        aiContentString,
+        JSON.stringify(embedding)  
+      );
+
+      // Save test values
       if (
         parsedResult.structured_data &&
         parsedResult.structured_data.tests
