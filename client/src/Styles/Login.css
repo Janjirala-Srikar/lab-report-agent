@@ -110,30 +110,7 @@ body {
 }
 
 /* Submit Button */
-.submit-button {
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #5C5470 0%, #352F44 100%);
-  color: #DBD8E3;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-top: 8px;
-  position: relative;
-  overflow: hidden;
-}
 
-.submit-button:hover {
-  opacity: 0.9;
-}
-
-.submit-button:active {
-  opacity: 0.85;
-}
 
 /* Form Footer */
 .form-footer {
@@ -167,7 +144,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0px;
-  background: #352F44;
+  background: #1e1a28;
   position: relative;
   overflow: hidden;
 }

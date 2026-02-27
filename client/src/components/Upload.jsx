@@ -347,20 +347,27 @@ const Upload = () => {
           <div className="result-content">
             <div className="result-tests">
               <h3>Test Results</h3>
-              <div className="tests-table">
-                {result.structured_data?.tests?.map((test, i) => (
-                  <div key={i} className={`test-row ${getStatusClass(test)}`}>
-                    <div className="test-info">
-                      <p className="test-name">{test.test_name}</p>
-                      <p className="test-range">{test.reference_range || "—"}</p>
-                    </div>
-                    <div className="test-value">
-                      <span className="value">{test.value || "—"}</span>
-                      <span className="unit">{test.unit || "—"}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <table className="tests-table">
+                <thead>
+                  <tr className="table-header">
+                    <th>Test Name</th>
+                    <th>Value</th>
+                    <th>Reference Range</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.structured_data?.tests?.map((test, i) => (
+                    <tr key={i} className={`table-row ${getStatusClass(test)}`}>
+                      <td className="test-name">{test.test_name}</td>
+                      <td className="test-value-cell">
+                        <span className="value">{test.value || "—"}</span>
+                        {test.unit && <span className="unit">{test.unit}</span>}
+                      </td>
+                      <td className="test-range">{test.reference_range || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div className="result-analysis">
@@ -385,14 +392,14 @@ const Upload = () => {
                   ))}
                 </div>
               </div>
-              <button
-                className={`voice-btn ${isSpeaking ? "voice-btn--active" : ""}`}
-                onClick={handleSpeak}
-                title={isSpeaking ? "Stop" : "Listen"}
-              >
-                {isSpeaking ? "⏹" : "🔊"}
-              </button>
               <div className="analysis-text">
+                <button
+                  className={`voice-btn ${isSpeaking ? "voice-btn--active" : ""}`}
+                  onClick={handleSpeak}
+                  title={isSpeaking ? "Stop" : "Listen"}
+                >
+                  {isSpeaking ? "⏹" : "🔊"}
+                </button>
                 {formatExplanation(result.explanation?.[activeLang])}
               </div>
             </div>

@@ -6,33 +6,18 @@ import DotGrid from "./DotGrid";
 
 const REPORT_ITEMS = [
   { label: "Hemoglobin (HGB)", value: "14.2 g/dL", tag: "normal" },
+  { label: "RBC Count", value: "4.9 M/µL", tag: "normal" },
+  { label: "Hematocrit (HCT)", value: "42%", tag: "normal" },
+  { label: "MCV", value: "88 fL", tag: "normal" },
+
   { label: "WBC Count", value: "11.8 K/µL", tag: "high" },
-  { label: "Platelets", value: "148 K/µL", tag: "low" },
-  { label: "Glucose (Fasting)", value: "98 mg/dL", tag: "normal" },
+  { label: "Neutrophils", value: "72%", tag: "high" },
+  // { label: "Lymphocytes", value: "22%", tag: "normal" },
+  // { label: "Monocytes", value: "4%", tag: "normal" },
+  // { label: "Eosinophils", value: "1%", tag: "normal" },
 ];
 
-const HOW_STEPS = [
-  {
-    num: "01",
-    title: "Upload your PDF lab report",
-    desc: "Drag and drop or browse to upload any lab report. PDFPlumber extracts structured data with precision.",
-  },
-  {
-    num: "02",
-    title: "AI parses & benchmarks values",
-    desc: "The RAG pipeline cross-references your results against a curated medical benchmark database in real time.",
-  },
-  {
-    num: "03",
-    title: "Receive a plain-language summary",
-    desc: "Get a clear, jargon-free explanation of every value — what it means, why it matters, and what to ask your doctor.",
-  },
-  {
-    num: "04",
-    title: "Review flagged abnormalities",
-    desc: "Abnormal values are highlighted with context, helping you understand significance without triggering unnecessary anxiety.",
-  },
-];
+
 
 const FEATURES = [
   { icon: "🧾", theme: "green", title: "Intelligent PDF Parsing", desc: "PDFPlumber extracts tabular lab data from any report format with high accuracy, handling varied layouts." },
@@ -43,16 +28,7 @@ const FEATURES = [
   { icon: "🔒", theme: "teal", title: "Privacy First", desc: "Reports are processed securely and never stored. Your medical data stays yours." },
 ];
 
-const TECH_STACK = [
-  { icon: "🐍", label: "Python" },
-  { icon: "🦜", label: "LangChain" },
-  { icon: "📄", label: "PDFPlumber" },
-  { icon: "🔍", label: "RAG Pipeline" },
-  { icon: "🧠", label: "LLM Integration" },
-  { icon: "🗃️", label: "Vector Store" },
-  { icon: "⚡", label: "FastAPI" },
-  { icon: "📐", label: "Medical Benchmarks DB" },
-];
+
 
 const DELIVERABLES = [
   {
@@ -137,7 +113,7 @@ export default function App() {
           alignItems: 'center', 
           padding: '12px 15px',
           // gap: '80px',
-          background: 'rgba(255, 255, 255, 0.08)',
+          background: 'rgba(255, 255, 255, 0.06)',
           backdropFilter: 'blur(12px)',
           borderRadius: '100px',
           border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -168,7 +144,9 @@ export default function App() {
           Turn complex lab reports into clear, human explanations.
         </p>
         <div className="hero-actions" style={{ position: 'relative', zIndex: 20 }}>
-          <a href="#cta" className="btn-primary">Upload Medical Report</a>
+          <Link to="/login" className="btn-primary">
+  Upload Medical Report
+</Link>
           <a
             href="#"
             className="btn-ghost"
@@ -207,14 +185,14 @@ export default function App() {
             <div>
               <p className="report-section-title">AI-Generated Summary</p>
               <div className="report-summary">
-                <div className="report-summary-header">
-                  <div className="report-summary-icon">✦</div>
-                  <span className="report-summary-label">Quantera Insight</span>
-                </div>
-                <p>
-                  Your hemoglobin and glucose levels are within healthy ranges. Your white blood cell count is slightly elevated, which may suggest your body is actively fighting an infection. Platelets are mildly low — not an immediate concern, but worth discussing with your doctor at your next visit.
-                </p>
-              </div>
+  <div className="report-summary-header">
+    <div className="report-summary-icon">✦</div>
+    <span className="report-summary-label">Quantera Insight</span>
+  </div>
+  <p>
+    Your Complete Blood Count indicates overall stable health parameters. Hemoglobin is within the optimal range, reflecting adequate oxygen transport and no signs of anemia. Fasting glucose remains well-controlled and does not suggest impaired glucose tolerance. However, your white blood cell countis mildly elevated, which may indicate an ongoing immune response due to infection, inflammation, recent physical stress, or recovery from illness. Platelets  are slightly below the typical reference threshold but remain close to normal, making this a borderline finding rather than an immediate concern.
+  </p>
+</div>
             </div>
           </div>
         </div>
@@ -327,15 +305,18 @@ export default function App() {
 
       {/* CTA */}
       <section className="cta-section" id="cta">
-        <div className="cta-inner animate-in" ref={ref(60)}>
-          <p className="section-label">Get Started</p>
-          <h2 className="section-title">Your lab report shouldn't feel like a mystery</h2>
-          <p className="section-sub">
-            Join the waitlist for early access. Be the first to experience healthcare clarity powered by AI.
-          </p>
-
-        </div>
-      </section>
+  <div className="cta-inner animate-in" ref={ref(60)}>
+    <p className="section-label">Take Control</p>
+    <h2 className="section-title">
+      Understand your health in minutes, not hours
+    </h2>
+    <p className="section-sub">
+      Upload your lab report and receive clear explanations, risk indicators,
+      trend analysis, and actionable insights, powered by intelligent medical analysis.
+      No jargon. No confusion. Just clarity.
+    </p>
+  </div>
+</section>
 
       {/* FOOTER */}
       <footer>
