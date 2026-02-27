@@ -2,9 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./components/Landing";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import DashBoard from "./components/DashBoard";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Upload from "./components/Upload";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -13,9 +12,10 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route 
-          path="/dashboard" 
-          element={<ProtectedRoute element={<Upload />} />} 
+
+        <Route
+          path="/dashboard"
+          element={<ProtectedRoute element={<Upload />} />}
         />
       </Routes>
     </BrowserRouter>
