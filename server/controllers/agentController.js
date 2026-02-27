@@ -67,13 +67,10 @@ Example:
   const raw = completion.choices[0]?.message?.content || "";
 
   try {
-    // Extract JSON array using regex
     const match = raw.match(/\[[^\]]+\]/);
-
     if (!match) return [];
 
     const parsed = JSON.parse(match[0]);
-
     if (!Array.isArray(parsed)) return [];
 
     return parsed.map(tag => tag.toLowerCase());
@@ -96,14 +93,14 @@ exports.askAgent = async (req, res) => {
       return res.status(400).json({ message: "Question is required" });
     }
 
-    // STEP 1: Intent
+    // STEP 1: Intent Detection
     const medicalIntent = isMedicalQuestion(question);
 
     // STEP 2: Embedding + Tags
     const questionEmbedding = await generateEmbedding(question);
     const newTags = await generateTags(question);
 
-    // STEP 3: Smart Tag Grouping (60% rule)
+    // STEP 3: Tag-Based Grouping (30% rule)
     const previousChats = await reportModel.getUserQuestions(userId);
 
     let groupId = null;
@@ -128,7 +125,7 @@ exports.askAgent = async (req, res) => {
       groupId = crypto.randomUUID();
     }
 
-    // STEP 4: Retrieve Group Memory
+    // STEP 4: Retrieve Group Conversation Memory
     const groupHistory = await reportModel.getGroupHistory(
       userId,
       groupId
@@ -138,11 +135,11 @@ exports.askAgent = async (req, res) => {
 
     groupHistory.slice(-5).forEach((item) => {
       conversationContext += `User: ${item.question}\n`;
-      conversationContext += `AI: ${item.answer}\n\n`;
+      conversationContext += `Assistant: ${item.answer}\n\n`;
     });
 
     // ======================================================
-    // 🔥 NON MEDICAL MODE
+    // 🔥 NON-MEDICAL MODE
     // ======================================================
     if (!medicalIntent) {
 
@@ -154,9 +151,9 @@ User Question:
 ${question}
 
 Instructions:
-- Remember previous user details.
-- If user shared their name earlier, use it.
-- Answer naturally.
+- Use previous conversation context if relevant.
+- If the user shared their name earlier in this group, use it.
+- Answer naturally and conversationally.
 `;
 
       const completion = await groq.chat.completions.create({
@@ -242,8 +239,8 @@ Instructions:
 - Analyze medical data carefully.
 - Compare values if needed.
 - Detect trends if applicable.
-- Answer clearly in English and Hindi.
-- Add final note:
+- Provide clear reasoning.
+- End with:
 "This is AI-generated information. Please consult a licensed physician."
 `;
 
