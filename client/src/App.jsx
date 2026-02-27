@@ -6,6 +6,7 @@ import Upload from "./components/Upload";
 import Trends from "./components/Trends";
 import Dashboard from "./components/DashBoard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ChatBot from "./components/ChatBot";
 
 function App() {
   return (

@@ -135,22 +135,17 @@ export default function App() {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: scrolled ? '12px 56px' : '12px 44px',
-          gap: '80px',
+          padding: '12px 15px',
+          // gap: '80px',
           background: 'rgba(255, 255, 255, 0.08)',
           backdropFilter: 'blur(12px)',
           borderRadius: '100px',
           border: '1px solid rgba(255, 255, 255, 0.15)',
           maxWidth: scrolled ? '100%' : '98%',
-          width: 'auto',
-          transition: 'padding 0.3s ease, maxWidth 0.3s ease'
+          width: '500px',
         }}>
           <a href="#" className="nav-logo">
-            <img 
-              src="https://files.catbox.moe/t8406d.svg" 
-              alt="Quantera Logo" 
-              style={{ height: '50px', width: 'auto', display: 'block' }}
-            />
+            <div className="logo">Quantera</div>
           </a>
           <ul className="nav-links">
             <li>
