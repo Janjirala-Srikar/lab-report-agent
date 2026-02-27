@@ -10,7 +10,6 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 exports.extractFileData = async (req, res) => {
   try {
-    // Check if user is authenticated (from verifyToken middleware)
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
@@ -32,18 +31,14 @@ exports.extractFileData = async (req, res) => {
       // IMAGE OCR
       // ===============================
       if (mimeType.startsWith("image/")) {
-        console.log("Processing image:", file.originalname);
-
         const result = await Tesseract.recognize(filePath, "eng");
         extractedText = result.data.text;
       }
 
       // ===============================
-      // PDF OCR USING POPPLER
+      // PDF OCR
       // ===============================
       else if (mimeType === "application/pdf") {
-        console.log("Processing PDF:", file.originalname);
-
         const outputDir = "./uploads";
 
         const opts = {
@@ -65,41 +60,26 @@ exports.extractFileData = async (req, res) => {
 
         for (const img of images) {
           const imgPath = path.join(outputDir, img);
-
           const result = await Tesseract.recognize(imgPath, "eng");
           extractedText += result.data.text + "\n";
-
           fs.unlinkSync(imgPath);
         }
       }
 
-      else {
-        extractedText = "Unsupported file format";
-      }
-
-      // ===============================
-      // CLEAN OCR TEXT (optional improvement)
-      // ===============================
       extractedText = extractedText
         .replace(/[^\x00-\x7F]/g, "")
         .replace(/\s+/g, " ")
         .trim();
 
       // ===============================
-      // SEND TO GEMINI
+      // GEMINI STRUCTURING
       // ===============================
       const prompt = `
-You are a medical data extraction and explanation assistant.
+You are a medical data extraction assistant.
 
-From the medical report text below:
+Extract structured medical data and explanation in English, Telugu and Hindi.
 
-1. Extract structured medical data.
-2. Provide a detailed explanation in:
-   - English (respectful tone, refer to user as "you")
-   - Telugu (respectful tone)
-   - Hindi (respectful tone)
-
-Return STRICT JSON only in this format:
+Return STRICT JSON in this format:
 
 {
   "structured_data": {
@@ -129,7 +109,6 @@ ${extractedText}
       const response = await model.generateContent(prompt);
       const aiText = response.response.text();
 
-      // Remove markdown formatting if present
       const cleanedAIText = aiText
         .replace(/```json/g, "")
         .replace(/```/g, "")
@@ -140,49 +119,63 @@ ${extractedText}
       try {
         parsedResult = JSON.parse(cleanedAIText);
       } catch (err) {
-        console.error("AI JSON Parse Error:", err);
         parsedResult = {
           structured_data: null,
           explanation: {
-            english: "AI response parsing failed.",
-            telugu: "AI సమాధానాన్ని విశ్లేషించడంలో సమస్య వచ్చింది.",
-            hindi: "AI उत्तर को पार्स करने में समस्या आई।"
-          },
-          raw_ai_output: cleanedAIText
+            english: "AI parsing failed.",
+            telugu: "AI విశ్లేషణలో లోపం.",
+            hindi: "AI विश्लेषण विफल।"
+          }
         };
       }
 
       // ===============================
-      // SAVE TO DATABASE
+      // SAVE MAIN REPORT
       // ===============================
-      const reportData = {
-        fileName: file.originalname,
-        structured_data: parsedResult.structured_data,
-        explanation: parsedResult.explanation,
-      };
+      const dbResult = await reportModel.saveMedicalReport(
+        userId,
+        file.originalname,
+        extractedText,
+        parsedResult.structured_data,
+        parsedResult.explanation
+      );
 
-      try {
-        const dbResult = await reportModel.saveMedicalReport(
-          userId,
-          file.originalname,
-          extractedText,
-          parsedResult.structured_data,
-          parsedResult.explanation
-        );
+      const reportId = dbResult.insertId;
 
-        reportData.id = dbResult.insertId;
-        reportData.storedAt = new Date();
-      } catch (dbError) {
-        console.error("Database Save Error:", dbError);
-        reportData.dbError = "Failed to save to database";
+      // ===============================
+      // STEP 2: SAVE EACH TEST VALUE SEPARATELY
+      // ===============================
+      if (
+        parsedResult.structured_data &&
+        parsedResult.structured_data.tests
+      ) {
+        for (const test of parsedResult.structured_data.tests) {
+          const numericValue = parseFloat(test.value);
+
+          if (!isNaN(numericValue)) {
+            await reportModel.saveMedicalTestValue(
+              userId,
+              reportId,
+              test.test_name,
+              numericValue,
+              test.unit,
+              test.reference_range
+            );
+          }
+        }
       }
 
-      results.push(reportData);
+      results.push({
+        id: reportId,
+        fileName: file.originalname,
+        structured_data: parsedResult.structured_data,
+        explanation: parsedResult.explanation
+      });
     }
 
     res.json({
       message: "Files processed successfully",
-      data: results,
+      data: results
     });
 
   } catch (error) {
