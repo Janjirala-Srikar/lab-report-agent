@@ -186,7 +186,7 @@ const getTestHistoryByName = async (userId, testName) => {
 // ==========================================
 const getAllTestHistory = async (userId) => {
   const [rows] = await pool.execute(
-    `SELECT test_name, value, unit, created_at
+    `SELECT test_name, value, unit, reference_range, created_at
      FROM medical_test_values
      WHERE user_id = ?
      ORDER BY test_name, created_at ASC`,

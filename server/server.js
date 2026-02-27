@@ -1,6 +1,7 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+
 
 const userController = require("./controllers/userController");
 const emailController = require("./controllers/emailController");

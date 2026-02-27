@@ -41,6 +41,10 @@ exports.getUserTrends = async (req, res) => {
       // Ensure it's a valid number
       percentChange = isNaN(percentChange) ? 0 : percentChange;
 
+      // Get unit and reference_range from the first record
+      const unit = records[0].unit || "";
+      const reference_range = records[0].reference_range || "";
+
       trends.push({
         test_name: testName,
         previous_value: first,
@@ -52,6 +56,8 @@ exports.getUserTrends = async (req, res) => {
             : percentChange < 0
             ? "Decreased"
             : "Stable",
+        unit,
+        reference_range,
       });
     }
 

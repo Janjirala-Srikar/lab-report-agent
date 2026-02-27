@@ -4,12 +4,9 @@
 ║   Clean, clinical, warm. Built for real humans.  ║
 ╚══════════════════════════════════════════════════╝
 
-DB schema observed:
-  report_id | test_name | value | unit | reference_range
-
 Run:
     pip install streamlit plotly pandas requests
-    streamlit run health_trends_v2.py
+    streamlit run health_trends_streamlit.py
 """
 
 import streamlit as st
@@ -191,9 +188,9 @@ html, body, [class*="css"] {
     min-width: 58px; text-align: right; flex-shrink: 0;
 }
 
-/* ── Range gauge ── */
+/* ── Range gauge — IMPROVED SCALING ── */
 .gauge-track {
-    width: 90px; height: 6px;
+    width: 140px; height: 8px;
     background: var(--border); border-radius: 100px;
     position: relative; flex-shrink: 0;
     overflow: visible;
@@ -204,11 +201,12 @@ html, body, [class*="css"] {
     transition: width .4s;
 }
 .gauge-pin {
-    width: 2px; height: 12px;
-    position: absolute; top: -3px;
+    width: 3px; height: 16px;
+    position: absolute; top: -4px;
     background: var(--text);
     border-radius: 1px;
     transform: translateX(-50%);
+    box-shadow: 0 0 8px currentColor;
 }
 
 /* ── Streamlit native widget dark overrides ── */
@@ -251,48 +249,28 @@ button[data-baseweb="tab"]:hover { color: var(--teal) !important; }
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# DEMO DATA  — reflects the DB schema you showed:
-#   report_id | test_name | value | unit | reference_range
-#   (trends endpoint adds: previous_value, current_value,
-#    percent_change, trend — we'll synthesise both here)
-# ─────────────────────────────────────────────
-DEMO_TRENDS = [
-    {"test_name": "Post Lunch Blood Glucose", "previous_value": 98,   "current_value": 102,  "percent_change": "4.08",    "trend": "Increased", "unit": "mg/dL", "reference_range": "<140 mg/dL"},
-    {"test_name": "S. Uric Acid",             "previous_value": 5.8,  "current_value": 5.1,  "percent_change": "-12.07",  "trend": "Decreased", "unit": "mg/dL", "reference_range": "2.6–6.0 mg/dL"},
-    {"test_name": "Blood Urea",               "previous_value": 20.1, "current_value": 14.98,"percent_change": "-25.47",  "trend": "Decreased", "unit": "mg/dL", "reference_range": "17–43 mg/dL"},
-    {"test_name": "S. Creatinine",            "previous_value": 0.61, "current_value": 0.56, "percent_change": "-8.20",   "trend": "Decreased", "unit": "mg/dL", "reference_range": "0.55–1.02 mg/dL"},
-    {"test_name": "Gamma-Glutamyl Transferase","previous_value": 22,   "current_value": 17,   "percent_change": "-22.73",  "trend": "Decreased", "unit": "U/L",   "reference_range": "<38 U/L"},
-    {"test_name": "HbA1c",                    "previous_value": 5.4,  "current_value": 6.1,  "percent_change": "12.96",   "trend": "Increased", "unit": "%",     "reference_range": "4.0–5.6%"},
-    {"test_name": "LDL Cholesterol",          "previous_value": 130,  "current_value": 112,  "percent_change": "-13.85",  "trend": "Decreased", "unit": "mg/dL", "reference_range": "<130 mg/dL"},
-    {"test_name": "TSH",                      "previous_value": 2.8,  "current_value": 2.3,  "percent_change": "-17.86",  "trend": "Decreased", "unit": "µIU/mL","reference_range": "0.4–4.0 µIU/mL"},
-    {"test_name": "Vitamin D Total",          "previous_value": 18,   "current_value": 32,   "percent_change": "77.78",   "trend": "Increased", "unit": "ng/mL", "reference_range": "30–100 ng/mL"},
-    {"test_name": "Serum Ferritin",           "previous_value": 45,   "current_value": 38,   "percent_change": "-15.56",  "trend": "Decreased", "unit": "ng/mL", "reference_range": "12–150 ng/mL"},
-]
-
-# ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    use_demo = st.toggle("Use demo data", value=True)
     token_input, api_url, show_debug = "", "http://localhost:5000/api/trends", False
     query_params = st.query_params
     if "token" in query_params:
         token_input = query_params.get("token", "")
-    if not use_demo:
-        token_input = st.text_input("JWT Token", value=token_input, type="password")
-        api_url     = st.text_input("API Endpoint", value=api_url)
-        show_debug  = st.checkbox("Show raw response")
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("Fetch", use_container_width=True):
-                st.cache_data.clear(); st.rerun()
-        with c2:
-            if st.button("Clear", use_container_width=True):
-                st.cache_data.clear(); st.toast("Cleared!")
+    
+    token_input = st.text_input("JWT Token", value=token_input, type="password", placeholder="eyJhbGciOiJIUzI1NiIs...")
+    api_url     = st.text_input("API Endpoint", value=api_url)
+    show_debug  = st.checkbox("Show raw response")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Fetch", use_container_width=True):
+            st.cache_data.clear(); st.rerun()
+    with c2:
+        if st.button("Clear", use_container_width=True):
+            st.cache_data.clear(); st.toast("Cleared!")
 
 # ─────────────────────────────────────────────
-# FETCH
+# FETCH — zero st.* calls inside (cached function)
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=60, show_spinner=False)
 def fetch_trends(token, url):
@@ -300,9 +278,12 @@ def fetch_trends(token, url):
         resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=10)
         try:   payload = resp.json()
         except: payload = {}
-        if resp.status_code in (401, 403): return None, f"❌ {resp.status_code} Auth error — check your token.", payload
-        if resp.status_code == 404:        return None, f"❌ 404 Not Found — check your API URL.", payload
-        if resp.status_code >= 500:        return None, f"❌ Server Error {resp.status_code}.", payload
+        if resp.status_code in (401, 403): 
+            return None, f"❌ {resp.status_code} Auth error — check your token.", payload
+        if resp.status_code == 404:        
+            return None, f"❌ 404 Not Found — check your API URL.", payload
+        if resp.status_code >= 500:        
+            return None, f"❌ Server Error {resp.status_code}.", payload
         resp.raise_for_status()
         if "message" in payload and "trends" not in payload:
             return [], payload["message"], payload
@@ -316,7 +297,6 @@ def fetch_trends(token, url):
         return None, f"❌ {type(exc).__name__}: {exc}", None
 
 def load_data():
-    if use_demo: return DEMO_TRENDS
     if not token_input.strip():
         st.info("Open the sidebar → enter your JWT token → Fetch.")
         st.stop()
@@ -374,6 +354,8 @@ STATUS_LABELS = {"high": "High", "low": "Low", "normal": "Normal"}
 
 TREND_COL = {"Increased": "#fb7185", "Decreased": "#2dd4bf", "Stable": "#818cf8"}
 TREND_ICO = {"Increased": "↑", "Decreased": "↓", "Stable": "→"}
+
+
 
 # ─────────────────────────────────────────────
 # ENRICH
@@ -617,6 +599,16 @@ with tab1:
 # TAB 2 — RANGE STATUS
 # ══════════════════════════════════════════════
 with tab2:
+    # Add heading to Range Status tab
+    st.markdown("""
+    <div class="top-bar" style="margin-bottom: 2rem;">
+      <div>
+        <div class="top-bar-logo">Range Status</div>
+        <div class="top-bar-sub">Current values aligned with reference ranges</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown('<div class="sec-head" style="margin-top:.5rem">Current Values vs Reference Ranges</div>', unsafe_allow_html=True)
     st.markdown('<div class="sec-sub">Based on reference_range from your lab database</div>', unsafe_allow_html=True)
 

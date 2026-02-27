@@ -1,12 +1,25 @@
 // utils/embedding.js
 
-const { env, AutoTokenizer, AutoModel } = require("@xenova/transformers");
-
-env.allowLocalModels = true;
-env.allowRemoteModels = true;
+let env, AutoTokenizer, AutoModel;
 
 let model = null;
 let tokenizer = null;
+
+// ==========================================
+// LOAD TRANSFORMERS (ESM FIX)
+// ==========================================
+async function loadTransformers() {
+  if (AutoTokenizer && AutoModel) return;
+
+  const transformers = await import("@xenova/transformers");
+
+  env = transformers.env;
+  AutoTokenizer = transformers.AutoTokenizer;
+  AutoModel = transformers.AutoModel;
+
+  env.allowLocalModels = true;
+  env.allowRemoteModels = true;
+}
 
 // ==========================================
 // INITIALIZE MODEL (Lazy Load)
@@ -14,36 +27,40 @@ let tokenizer = null;
 async function initializeModel() {
   if (model && tokenizer) return;
 
+  await loadTransformers();
+
   console.log("Loading MiniLM embedding model...");
+
   tokenizer = await AutoTokenizer.from_pretrained(
     "Xenova/all-MiniLM-L6-v2"
   );
+
   model = await AutoModel.from_pretrained(
     "Xenova/all-MiniLM-L6-v2"
   );
+
   console.log("MiniLM loaded successfully!");
 }
 
 // ==========================================
-// MEAN POOLING (Correct 3D Handling)
+// MEAN POOLING
 // ==========================================
 function meanPooling(lastHiddenState, attentionMask) {
   const data = lastHiddenState.data;
-
-  // MiniLM output dims = [batchSize, seqLength, hiddenSize]
-  const [batchSize, seqLength, hiddenSize] = lastHiddenState.dims;
+  const [batchSize, seqLength, hiddenSize] =
+    lastHiddenState.dims;
 
   const meanPooled = new Array(hiddenSize).fill(0);
   let validTokens = 0;
 
   for (let i = 0; i < seqLength; i++) {
-    // Skip padding tokens
     if (attentionMask && attentionMask[i] === 0) continue;
 
     validTokens++;
 
     for (let j = 0; j < hiddenSize; j++) {
-      meanPooled[j] += data[i * hiddenSize + j];
+      meanPooled[j] +=
+        data[i * hiddenSize + j];
     }
   }
 
@@ -57,7 +74,7 @@ function meanPooling(lastHiddenState, attentionMask) {
 }
 
 // ==========================================
-// NORMALIZE VECTOR (Unit Length)
+// NORMALIZE VECTOR
 // ==========================================
 function normalizeVector(vec) {
   const magnitude = Math.sqrt(
@@ -117,10 +134,12 @@ async function generateEmbedding(text) {
 
     const embedding = meanPooling(
       output.last_hidden_state,
-      output.attention_mask?.data || output.attention_mask
+      output.attention_mask?.data ||
+        output.attention_mask
     );
 
-    const normalizedEmbedding = normalizeVector(embedding);
+    const normalizedEmbedding =
+      normalizeVector(embedding);
 
     console.log(
       "Embedding length:",
