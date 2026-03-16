@@ -1,33 +1,35 @@
 flowchart TD
-  subgraph Client
-    A[Upload UI \n(drag & drop)] -->|files| B[API: /api/upload]
-    C[AI Assistant UI] -->|question| D[API: /api/ask]
-    E[Dashboard/Trends] -->|view| F[API: /api/trends]
+  subgraph Client["Client (React + Vite)"]
+    A["Upload UI<br/>Drag & Drop"] -->|files| B["POST /api/upload"]
+    C["AI Assistant"] -->|question| D["POST /api/ask"]
+    E["Dashboard/Trends"] -->|view| F["GET /api/trends"]
   end
 
-  subgraph Server (Express)
-    B --> G[Ingest Controller \nOCR (Tesseract) + PDF conversion]
-    G --> H[LLM Parser \n(Gemini / Groq / OpenAI)]
-    H --> I[Embedding Generator]
-    I --> J[MySQL: reports, tests, embeddings]
-    D --> K[Agent Controller \nIntent detection + RAG]
+  subgraph Server["Server (Express)"]
+    B --> G["Ingest<br/>OCR + PDF"]
+    G --> H["LLM Parser<br/>Gemini/Groq/OpenAI"]
+    H --> I["Embeddings"]
+    I --> J["MySQL Storage"]
+    D --> K["Agent<br/>RAG + Intent"]
     K --> J
     F --> J
   end
 
-  subgraph Streamlit
-    S[Streamlit analytics] -->|reads| J
+  subgraph Streamlit["Analytics"]
+    S["Streamlit<br/>Dashboards"] -->|reads| J
   end
 
-  subgraph External
-    N[LLM Providers \n(Gemini, Groq, OpenAI)]
-    O[Tesseract & Poppler]
-    P[Email / SMTP]
+  subgraph External["External Services"]
+    N["LLM APIs"]
+    O["Tesseract/Poppler"]
+    P["Email/SMTP"]
   end
 
   H --> N
   G --> O
   Server --> P
 
-  classDef infra fill:#f9f,stroke:#333,stroke-width:1px;
-  class Server,External,Streamlit infra;
+  classDef infra fill:#f9f,stroke:#333,stroke-width:2px;
+  classDef external fill:#bbf,stroke:#333,stroke-width:2px;
+  class Server,Streamlit infra;
+  class External external;

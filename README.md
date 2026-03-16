@@ -51,44 +51,50 @@ Tip: Replace or extend the images in `client/public` with your project screensho
 
 Architecture Diagram
 --------------------
-The architecture diagram (Mermaid source) is available at `client/public/architecture.mmd`. You can render it locally (Mermaid CLI or compatible viewer) or open it in tools that support Mermaid.
+The architecture diagram (Mermaid source) is available at `client/public/architecture.mmd`. A rendered SVG version is at `client/public/architecture.svg`.
+
+**Architecture Diagram:**
+
+![Architecture Diagram](client/public/architecture.svg)
 
 Mermaid source (quick preview):
 
 ```mermaid
 flowchart TD
-	subgraph Client
-		A[Upload UI \n(drag & drop)] -->|files| B[API: /api/upload]
-		C[AI Assistant UI] -->|question| D[API: /api/ask]
-		E[Dashboard/Trends] -->|view| F[API: /api/trends]
-	end
+  subgraph Client["Client (React + Vite)"]
+    A["Upload UI<br/>Drag & Drop"] -->|files| B["POST /api/upload"]
+    C["AI Assistant"] -->|question| D["POST /api/ask"]
+    E["Dashboard/Trends"] -->|view| F["GET /api/trends"]
+  end
 
-	subgraph Server (Express)
-		B --> G[Ingest Controller \nOCR (Tesseract) + PDF conversion]
-		G --> H[LLM Parser \n(Gemini / Groq / OpenAI)]
-		H --> I[Embedding Generator]
-		I --> J[MySQL: reports, tests, embeddings]
-		D --> K[Agent Controller \nIntent detection + RAG]
-		K --> J
-		F --> J
-	end
+  subgraph Server["Server (Express)"]
+    B --> G["Ingest<br/>OCR + PDF"]
+    G --> H["LLM Parser<br/>Gemini/Groq/OpenAI"]
+    H --> I["Embeddings"]
+    I --> J["MySQL Storage"]
+    D --> K["Agent<br/>RAG + Intent"]
+    K --> J
+    F --> J
+  end
 
-	subgraph Streamlit
-		S[Streamlit analytics] -->|reads| J
-	end
+  subgraph Streamlit["Analytics"]
+    S["Streamlit<br/>Dashboards"] -->|reads| J
+  end
 
-	subgraph External
-		N[LLM Providers \n(Gemini, Groq, OpenAI)]
-		O[Tesseract & Poppler]
-		P[Email / SMTP]
-	end
+  subgraph External["External Services"]
+    N["LLM APIs"]
+    O["Tesseract/Poppler"]
+    P["Email/SMTP"]
+  end
 
-	H --> N
-	G --> O
-	Server --> P
+  H --> N
+  G --> O
+  Server --> P
 
-	classDef infra fill:#f9f,stroke:#333,stroke-width:1px;
-	class Server,External,Streamlit infra;
+  classDef infra fill:#f9f,stroke:#333,stroke-width:2px;
+  classDef external fill:#bbf,stroke:#333,stroke-width:2px;
+  class Server,Streamlit infra;
+  class External external;
 ```
 
 If you'd like, I can also generate a rendered SVG/PNG using the Mermaid CLI and add it to `client/public`.
@@ -127,6 +133,51 @@ Security & privacy:
 - Treat uploaded medical files and parsed data as protected health information (PHI). Use TLS, encrypted DB connections, and least-privilege access.
 - Rotate and store secrets in a vault; never commit API keys or secrets to git.
 
+Tech Stack (detailed)
+---------------------
+
+| Layer | Component | Technology | Version | Purpose |
+|-------|-----------|-----------|---------|---------|
+| **Frontend** | Framework | React | 18.x | UI components and state management |
+| | Build Tool | Vite | 5.x | Fast dev server and bundling |
+| | Styling | CSS / Tailwind CSS | Latest | Component styling and utilities |
+| | HTTP Client | Axios | 1.13.6+ | API calls and request handling |
+| | Auth | JWT (stored in localStorage) | N/A | User authentication and session |
+| **Server** | Runtime | Node.js | 18+ | Server-side runtime |
+| | Framework | Express.js | 4.18.2+ | REST API and routing |
+| | Auth Middleware | jsonwebtoken | 9.0.2+ | JWT token generation and verification |
+| | File Upload | Multer | 2.0.2+ | Multipart form-data handling |
+| | Environment | dotenv | 16.6.1+ | Environment variable loading |
+| | CORS | cors | 2.8.5+ | Cross-origin resource sharing |
+| **OCR & PDF** | OCR Engine | Tesseract.js | 7.0.0+ | Image-to-text extraction (client-side capable) |
+| | PDF Processing | pdf-poppler | 0.2.3+ | PDF-to-image conversion |
+| | PDF Utilities | pdfjs-dist | 3.11.174+ | PDF parsing and rendering |
+| **LLM / AI** | Google AI | @google/generative-ai | 0.24.1+ | Google Gemini API integration |
+| | Groq AI | groq-sdk | 0.37.0+ | Groq LLM API integration |
+| | OpenAI | openai | 6.25.0+ | OpenAI GPT integration |
+| | Embeddings | @xenova/transformers | 2.17.2+ | Local transformer-based embeddings |
+| **Database** | SQL DB | MySQL | 5.7+ | Relational storage for reports, tests, embeddings |
+| | MySQL Driver | mysql2 | 3.5.0+ | Node.js MySQL client |
+| **Email** | SMTP Client | nodemailer | 8.0.1+ | Email sending and notifications |
+| **Audio** | Speech SDK | microsoft-cognitiveservices-speech-sdk | 1.48.0+ | Speech-to-text and voice features |
+| **Security** | Password Hash | bcryptjs | 2.4.3+ | Password hashing and comparison |
+| **Utilities** | Crypto | crypto | Built-in | UUID and hash generation |
+| **Analytics** | Dashboarding | Streamlit | 1.x | Python-based analytics and dashboards |
+| | Data Processing | pandas | 2.x | Data manipulation and analysis (Streamlit) |
+| | Visualization | matplotlib / seaborn | Latest | Plotting and charting (Streamlit) |
+| **Dev Tools** | Process Manager | nodemon | 3.1.14+ | Auto-restart on file changes |
+
+Deployment Tech
+---------------
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Reverse Proxy | Nginx / Caddy | HTTPS termination, load balancing |
+| Container | Docker | Containerization (optional) |
+| Orchestration | Docker Compose | Local stack orchestration |
+| SSL/TLS | Let's Encrypt | Free SSL certificates |
+| Hosting | Cloud (AWS/GCP/Azure) | Production deployment |
+| CDN | CloudFront / Cloudflare | Static asset delivery |
 
 Key Server Routes
 -----------------
@@ -205,10 +256,3 @@ Contributing
 ------------
 Please open issues for bugs or feature requests. Pull requests are welcome — keep changes focused and include tests where appropriate.
 
-License
--------
-Declare your project license here.
-
-Maintainers
------------
-Add maintainer contact or team info here.
