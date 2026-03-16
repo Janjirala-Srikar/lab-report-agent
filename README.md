@@ -23,8 +23,8 @@ Test Credentials
 
 | Field | Value |
 |-------|-------|
-| Username | admin |
-| Password | admin123 |
+| Email | test@gmail.com |
+| Password | test123 |
 
 Core Flow
 ---------
