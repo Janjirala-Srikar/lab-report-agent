@@ -98,46 +98,60 @@ Mermaid Diagram (detailed flowchart):
 
 ```mermaid
 flowchart TD
-  subgraph Client["🖥️ Client (React + Vite)"]
-    A["Upload UI<br/>Drag & Drop"] -->|files| B["POST /api/upload"]
-    C["AI Assistant"] -->|question| D["POST /api/ask"]
-    E["Dashboard/Trends"] -->|view| F["GET /api/trends"]
-  end
-
-  subgraph Server["⚙️ Server (Express)"]
-    B --> G["Ingest<br/>OCR + PDF"]
-    G --> H["LLM Parser<br/>Gemini/Groq/OpenAI"]
-    H --> I["Embeddings"]
-    I --> J["MySQL Storage"]
-    D --> K["Agent<br/>RAG + Intent"]
-    K --> J
-    F --> J
-  end
-
-  subgraph Analytics["📊 Analytics"]
-    S["Streamlit<br/>Dashboards"] -->|reads| J
-  end
-
-  subgraph External["🔌 External Services"]
-    N["LLM APIs"]
-    O["Tesseract/Poppler"]
-    P["Email/SMTP"]
-  end
-
-  H --> N
-  G --> O
-  Server --> P
-
-  classDef client fill:#6b7dff,stroke:#5a6acc,stroke-width:2px,color:#fff;
-  classDef server fill:#eb2dd6,stroke:#c71fa8,stroke-width:2px,color:#fff;
-  classDef analytics fill:#00d4ff,stroke:#0099cc,stroke-width:2px,color:#fff;
-  classDef external fill:#ff6b6b,stroke:#cc5555,stroke-width:2px,color:#fff;
-  classDef default fill:#2d2d2d,stroke:#444,stroke-width:1px,color:#e0e0e0;
+  User["👤 User / Healthcare Provider"]
   
-  class Client client;
-  class Server server;
-  class Analytics analytics;
-  class External external;
+  User -->|interact| PL["Presentation Layer"]
+  
+  subgraph Presentation["🎨 Presentation Layer"]
+    direction LR
+    UI["UI Components<br/>& Dashboards"]
+    Chart["Charts & Analytics<br/>Recharts"]
+    Chat["Chat Interface<br/>AI Assistant"]
+  end
+  
+  PL -->|REST/WebSocket| AL["Application Layer"]
+  
+  subgraph Application["⚙️ Application Layer - Express"]
+    direction LR
+    REST["REST APIs"]
+    OCREngine["OCR Engine<br/>Tesseract"]
+    FileHandler["File Handler<br/>Upload & Process"]
+    LLMParser["LLM Parser<br/>Text→JSON"]
+    RAGAgent["RAG Agent<br/>Intent Detection"]
+    EmbedGen["Embedding Generator<br/>Transformers"]
+  end
+  
+  REST ---|Cypher Queries| DL["Data Layer"]
+  
+  subgraph DataLayer["💾 Data Layer - MySQL"]
+    direction LR
+    Reports["Medical Reports"]
+    Tests["Test Values"]
+    Embeddings["Embeddings"]
+    History["Chat History"]
+  end
+  
+  LLMParser -->|API Calls| ES["External Services"]
+  
+  subgraph External["🔌 External Services"]
+    direction LR
+    LLM["LLM Fallback Chain<br/>OpenAI / Gemini / Groq"]
+    OCR["Tesseract / Poppler<br/>PDF Conversion"]
+    Email["Email Service<br/>SMTP / Nodemailer"]
+  end
+  
+  DataLayer ---|reads/writes| EmbedGen
+  DataLayer ---|reads| RAGAgent
+  
+  style Presentation fill:#6b7dff,stroke:#4a5acc,stroke-width:2px,color:#fff
+  style Application fill:#eb2dd6,stroke:#c71fa8,stroke-width:2px,color:#fff
+  style DataLayer fill:#00d4ff,stroke:#0099cc,stroke-width:2px,color:#fff
+  style External fill:#ff6b6b,stroke:#cc5555,stroke-width:2px,color:#fff
+  style User fill:#4ecdc4,stroke:#2ba39f,stroke-width:2px,color:#fff
+  style PL fill:#5b6dcc,stroke:#4a5aaa,stroke-width:1px,color:#fff
+  style AL fill:#cc1fa0,stroke:#aa1680,stroke-width:1px,color:#fff
+  style DL fill:#00a9cc,stroke:#0088aa,stroke-width:1px,color:#fff
+  style ES fill:#ee5555,stroke:#cc4444,stroke-width:1px,color:#fff
 ```
 
 If you'd like, I can also generate a rendered SVG/PNG using the Mermaid CLI and add it to `client/public`.
