@@ -52,13 +52,49 @@ The application UI follows a simple, user-friendly flow. Below are the typical s
 
 Architecture Diagram
 --------------------
-The architecture diagram (Mermaid source) is available at `client/public/architecture.mmd`. A rendered SVG version is at `client/public/architecture.svg`.
 
-**Architecture Diagram:**
+```
+CSV/PDF Upload
+      |
+      v
+Express Backend --------- MySQL Database
+      |                        |
+      ├─ Ingest Router         ├─ Medical Reports
+      ├─ File Controller       ├─ Parsed Test Values
+      ├─ OCR (Tesseract)       ├─ Embeddings
+      ├─ LLM Parser            ├─ Chat History
+      ├─ Agent Controller      ├─ User Profiles
+      ├─ Embeddings Generator  └─ Trends Data
+      ├─ Auth Middleware
+      └─ Notifications
+      |
+      v
+React + Vite Frontend (Dashboard, Chat, Upload, Trends)
+      |
+      ├─ Home / Landing Page
+      ├─ Upload UI (Drag & Drop)
+      ├─ Dashboard (Charts, Analytics)
+      ├─ AI Assistant (RAG Chat)
+      ├─ Trends / Reports
+      └─ User Profile
+      |
+      v
+Streamlit Analytics (Optional)
+      |
+      ├─ Data Exploration
+      ├─ Report Summaries
+      ├─ Trend Analysis
+      └─ User Insights
 
-![Architecture Diagram](client/public/architecture.svg)
+External Integrations:
+      |
+      ├─ LLM APIs (Google Gemini, Groq, OpenAI)
+      ├─ Tesseract OCR + Poppler
+      ├─ Email / SMTP (nodemailer)
+      └─ Speech Services (Azure Cognitive)
+```
 
-Mermaid source (quick preview):
+Mermaid Diagram (detailed flowchart):
 
 ```mermaid
 flowchart TD
